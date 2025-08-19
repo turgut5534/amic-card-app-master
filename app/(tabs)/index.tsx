@@ -16,6 +16,8 @@ export default function HomeScreen() {
   const loadCards = useCallback(async () => {
     try {
       setLoading(true);
+      console.log("API_URL in APK:", process.env.EXPO_PUBLIC_API_URL);
+
       const response = await fetch(`${process.env.EXPO_PUBLIC_API_URL}`, {
         headers: {
           "Content-Type": "application/json",
@@ -23,8 +25,12 @@ export default function HomeScreen() {
         },
       });
 
-      if (!response.ok) throw new Error('Network response was not ok');
       const data = await response.json();
+
+        if (!response.ok) {
+          // Throw the actual error message from the server
+          throw new Error(data.error || 'Network response was not ok');
+        }
       const mapped = data.map((c: any) => ({
         id: c.card_id,
         name: c.card_name,
@@ -32,7 +38,7 @@ export default function HomeScreen() {
       }));
       setCards(mapped);
     } catch (err) {
-      console.error('Kartlar yüklenemedi', err);
+      console.error('Card could not load', err);
     } finally {
       setLoading(false);
     }
