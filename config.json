@@ -3,7 +3,7 @@
     "name": "Amic Card",
     "slug": "amic-card-app",
     "version": "1.0.0",
-    "API_URL": "https://turgutsalgin.com",
+    "API_URL": "https://api.fuelcard.turgutsalgin.com",
     "orientation": "portrait",
     "icon": "./assets/images/fuel2.png",
     "scheme": "amiccardapp",
