@@ -89,7 +89,7 @@ export default function IndexScreen() {
         const latestFuelPriceData = await latestFuelPriceRes.json()
 
         setFuelPrice(latestFuelPriceData.latest_fuel_price ?? fuelPrice)
-        setBalance(parseInt(cardInfo.balance));
+        setBalance(parseFloat(cardInfo.balance));
     
         const historyItemsRes = await fetch(`${config.expo.API_URL}/cards/${selectedCard}/transactions`, {
         headers: {
