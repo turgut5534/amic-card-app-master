@@ -3,7 +3,7 @@ import { useRouter } from 'expo-router';
 import React, { useEffect, useState } from 'react';
 import { Alert, FlatList, StatusBar, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-
+import config from '../../../config.json';
 
 interface HistoryItem {
   id: string;
@@ -72,20 +72,18 @@ export default function IndexScreen() {
     const loadData = async () => {
       try {
         const selectedCard = await AsyncStorage.getItem(SELECTED_CARD_KEY);
-        const cardInfoRes = await fetch(`${process.env.EXPO_PUBLIC_API_URL}/cards/${selectedCard}/info`, {
+        const cardInfoRes = await fetch(`${config.expo.API_URL}/cards/${selectedCard}/info`, {
         headers: {
-          "Content-Type": "application/json",
-          "x-api-key": process.env.EXPO_PUBLIC_SECRET_API as string, // ✅ works in Expo
+          "Content-Type": "application/json"
         },
       });
         const cardInfo = await cardInfoRes.json();
 
         setSelectedCardName(cardInfo.card_name)
 
-        const latestFuelPriceRes = await fetch(`${process.env.EXPO_PUBLIC_API_URL}/cards/${selectedCard}/latest-fuel-price`, {
+        const latestFuelPriceRes = await fetch(`${config.expo.API_URL}/cards/${selectedCard}/latest-fuel-price`, {
         headers: {
-          "Content-Type": "application/json",
-          "x-api-key": process.env.EXPO_PUBLIC_SECRET_API as string, // ✅ works in Expo
+          "Content-Type": "application/json"
           },
         });
         const latestFuelPriceData = await latestFuelPriceRes.json()
@@ -93,10 +91,9 @@ export default function IndexScreen() {
         setFuelPrice(latestFuelPriceData.latest_fuel_price ?? fuelPrice)
         setBalance(parseInt(cardInfo.balance));
     
-        const historyItemsRes = await fetch(`${process.env.EXPO_PUBLIC_API_URL}/cards/${selectedCard}/transactions`, {
+        const historyItemsRes = await fetch(`${config.expo.API_URL}/cards/${selectedCard}/transactions`, {
         headers: {
-          "Content-Type": "application/json",
-          "x-api-key": process.env.EXPO_PUBLIC_SECRET_API as string, // ✅ works in Expo
+          "Content-Type": "application/json"
           },
         });
         const data = await historyItemsRes.json();
@@ -150,12 +147,11 @@ export default function IndexScreen() {
             try {
               // Send POST request to backend
               const response = await fetch(
-                `${process.env.EXPO_PUBLIC_API_URL}/cards/${selectedCard}/spend`,
+                `${config.expo.API_URL}/cards/${selectedCard}/spend`,
                 {
                   method: 'POST',
                   headers: {
-                    'Content-Type': 'application/json',
-                    "x-api-key": process.env.EXPO_PUBLIC_SECRET_API as string,
+                    'Content-Type': 'application/json'
                   },
                   body: JSON.stringify({ amount: value, fuel_price: currentFuelPrice }),
                 }
@@ -207,12 +203,11 @@ export default function IndexScreen() {
             try {
               // Send POST request to backend
               const response = await fetch(
-                `${process.env.EXPO_PUBLIC_API_URL}/cards/${selectedCard}/topup`,
+                `${config.expo.API_URL}/cards/${selectedCard}/topup`,
                 {
                   method: 'POST',
                   headers: {
-                    'Content-Type': 'application/json',
-                    "x-api-key": process.env.EXPO_PUBLIC_SECRET_API as string,
+                    'Content-Type': 'application/json'
                   },
                   body: JSON.stringify({ amount: value }),
                 }

@@ -4,7 +4,7 @@ import { useRouter } from 'expo-router';
 import React, { useCallback, useState } from 'react';
 import { Alert, ScrollView, StatusBar, StyleSheet, Text, TouchableOpacity } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-
+import config from '../../config.json';
 
 const SELECTED_CARD_KEY = '@amic_selected_card';
 
@@ -16,14 +16,12 @@ export default function HomeScreen() {
   const loadCards = useCallback(async () => {
     try {
       setLoading(true);
-      console.log("API_URL in APK:", process.env.EXPO_PUBLIC_API_URL);
+      console.log("config.expo.API_URL in APK:", config.expo.API_URL);
 
-      const response = await fetch(`${process.env.EXPO_PUBLIC_API_URL}`, {
+      const response = await fetch(`${config.expo.API_URL}`, {
         headers: {
-          "Content-Type": "application/json",
-          "x-api-key": process.env.EXPO_PUBLIC_SECRET_API as string, // ✅ works in Expo
-        },
-      });
+          "Content-Type": "application/json"
+      }});
 
       const data = await response.json();
 
@@ -67,7 +65,7 @@ export default function HomeScreen() {
           onPress: async () => {
             try {
               // Optional: call API to delete
-              await fetch(`${process.env.EXPO_PUBLIC_API_URL}/cards/${cardId}/delete`, { method: 'DELETE' });
+              await fetch(`${config.expo.API_URL}/cards/${cardId}/delete`, { method: 'DELETE' });
               setCards(prev => prev.filter(c => c.id !== cardId));
             } catch (err) {
               console.error('Error deleting card', err);

@@ -2,6 +2,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { router } from 'expo-router';
 import React, { useCallback, useEffect, useState } from 'react';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import config from '../../../config.json';
 
 import {
   ActivityIndicator,
@@ -48,7 +49,7 @@ export default function HistoryTab() {
     try {
 
       const selectedCard = await AsyncStorage.getItem(SELECTED_CARD_KEY);
-      const historyItemsRes = await fetch(`${process.env.EXPO_PUBLIC_API_URL}/cards/${selectedCard}/transactions`, {
+      const historyItemsRes = await fetch(`${config.expo.API_URL}/cards/${selectedCard}/transactions`, {
         headers: {
           "Content-Type": "application/json",
           "x-api-key": process.env.EXPO_PUBLIC_SECRET_API as string, // ✅ works in Expo
@@ -65,7 +66,7 @@ export default function HistoryTab() {
         liters: parseFloat(item.liters)
       }));
 
-      const cardInfoRes = await fetch(`${process.env.EXPO_PUBLIC_API_URL}/cards/${selectedCard}/info`, {
+      const cardInfoRes = await fetch(`${config.expo.API_URL}/cards/${selectedCard}/info`, {
         headers: {
           "Content-Type": "application/json",
           "x-api-key": process.env.EXPO_PUBLIC_SECRET_API as string, // ✅ works in Expo

@@ -12,6 +12,7 @@ import {
   View,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import config from '../../config.json';
 
 export default function AddCardScreen() {
   const router = useRouter();
@@ -27,10 +28,9 @@ export default function AddCardScreen() {
     }
 
     try {
-      const response = await fetch(`${process.env.EXPO_PUBLIC_API_URL}/cards/add`, {
+      const response = await fetch(`${config.expo.API_URL}/cards/add`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json',
-          "x-api-key": process.env.EXPO_PUBLIC_SECRET_API as string,
+        headers: { 'Content-Type': 'application/json'
          },
         body: JSON.stringify({ name: cardName, balance }),
       });
@@ -38,15 +38,15 @@ export default function AddCardScreen() {
       const data = await response.json();
 
       if (!response.ok) {
-        Alert.alert('Hata', data.error || 'Kart eklenirken hata oluştu.');
+        Alert.alert('Hata', data.error || 'Error while adding the card.');
         return;
       }
 
-      Alert.alert('Başarılı', 'Kart eklendi!');
+      Alert.alert('Successfull', 'Card is added!');
       router.back();
     } catch (error) {
       console.error(error);
-      Alert.alert('Hata', 'Sunucuya bağlanırken hata oluştu.');
+      Alert.alert('Error', 'An error occured connecting to the server');
     }
   };
 

@@ -14,6 +14,7 @@ import {
   View,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import config from '../../../config.json';
 
 export default function CardStatsScreen() {
   const router = useRouter();
@@ -38,7 +39,7 @@ export default function CardStatsScreen() {
     try {
       setLoading(true);
       const selectedCard = await AsyncStorage.getItem(SELECTED_CARD_KEY);
-      let url = `${process.env.EXPO_PUBLIC_API_URL}/cards/${selectedCard}/summary`;
+      let url = `${config.expo.API_URL}/cards/${selectedCard}/summary`;
 
       // Apply date filter only if both dates are selected
       if (startDate && endDate) {

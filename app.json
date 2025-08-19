@@ -43,7 +43,8 @@
       "router": {},
       "eas": {
         "projectId": "fe9f68bf-0933-45a7-9cb5-67b63e101462"
-      }
+      },
+      "apiUrl": "https://turgutsalgin.com"
     }
   }
 }
