@@ -23,7 +23,7 @@ export default function AddCardScreen() {
     const balance = parseFloat(initialBalance);
 
     if (!cardName.trim() || isNaN(balance)) {
-      Alert.alert('Hata', 'Lütfen geçerli bir isim ve bakiye giriniz.');
+      Alert.alert('Error', 'Please a valid name and initial balance.');
       return;
     }
 

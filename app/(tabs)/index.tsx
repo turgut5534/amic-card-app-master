@@ -6,7 +6,13 @@ import { Alert, ScrollView, StatusBar, StyleSheet, Text, TouchableOpacity } from
 import { SafeAreaView } from 'react-native-safe-area-context';
 import config from '../../config.json';
 
-const SELECTED_CARD_KEY = '@amic_selected_card';
+const SELECTED_CARD_KEY = '@selected_card';
+
+interface CardData {
+  id: number;
+  balance: number;
+  name: string;
+}
 
 export default function HomeScreen() {
   const router = useRouter();
@@ -48,8 +54,11 @@ export default function HomeScreen() {
     }, [loadCards])
   );
 
-  const handleSelectCard = async (cardId: number) => {
-    await AsyncStorage.setItem(SELECTED_CARD_KEY, cardId.toString());
+  const handleSelectCard = async (id: number, balance: number, name: string) => {
+
+    const cardData: CardData = {id, balance, name}
+    await AsyncStorage.setItem(SELECTED_CARD_KEY, JSON.stringify(cardData));
+    
     router.push('/cards');
   };
 
@@ -96,7 +105,7 @@ export default function HomeScreen() {
     return (
       <TouchableOpacity
         style={[styles.card, { backgroundColor: color }]}
-        onPress={() => handleSelectCard(card.id)}
+        onPress={() => handleSelectCard(card.id, card.balance, card.name)}
         onLongPress={handleLongPress} // <-- long press triggers edit/delete
       >
         <Text style={styles.cardTitle}>{card.name}</Text>

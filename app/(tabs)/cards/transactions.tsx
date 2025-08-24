@@ -23,7 +23,13 @@ interface HistoryItem {
   fuel_price: number
 }
 
-const SELECTED_CARD_KEY = '@amic_selected_card';
+interface CardData {
+  id: number;
+  balance: number;
+  name: string;
+}
+
+const SELECTED_CARD_KEY = '@selected_card';
 
 const PAGE_SIZE = 10;
 
@@ -49,13 +55,22 @@ export default function HistoryTab() {
     setLoading(true);
     try {
 
-      const selectedCard = await AsyncStorage.getItem(SELECTED_CARD_KEY);
-      const historyItemsRes = await fetch(`${config.expo.API_URL}/cards/${selectedCard}/transactions`, {
+      const storedCardData = await AsyncStorage.getItem(SELECTED_CARD_KEY)!;
+        
+      if (!storedCardData) throw new Error("Card data not found");
+
+      const cardData: CardData = JSON.parse(storedCardData) as CardData;
+
+      setSelectedCardName(cardData.name)
+      setBalance(cardData.balance);
+
+      const historyItemsRes = await fetch(`${config.expo.API_URL}/cards/${cardData.id}/transactions`, {
         headers: {
           "Content-Type": "application/json",
           "x-api-key": process.env.EXPO_PUBLIC_SECRET_API as string, // ✅ works in Expo
         },
       });
+      
       const data = await historyItemsRes.json();
 
       const mappedHistory: HistoryItem[] = data.transactions.map((item: any) => ({
@@ -68,16 +83,8 @@ export default function HistoryTab() {
         fuel_price: parseFloat(item.fuel_price)
       }));
 
-      const cardInfoRes = await fetch(`${config.expo.API_URL}/cards/${selectedCard}/info`, {
-        headers: {
-          "Content-Type": "application/json",
-          "x-api-key": process.env.EXPO_PUBLIC_SECRET_API as string, // ✅ works in Expo
-        },
-      });
-      const cardInfo = await cardInfoRes.json();
-
-      setSelectedCardName(cardInfo.card_name)
-      setBalance(parseFloat(cardInfo.balance));
+      setSelectedCardName(data.card.card_name)
+      setBalance(parseFloat(data.card.balance));
       setHistory(mappedHistory);
  
 

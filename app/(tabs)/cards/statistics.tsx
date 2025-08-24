@@ -16,6 +16,14 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import config from '../../../config.json';
 
+interface CardData {
+  id: number;
+  balance: number;
+  name: string;
+}
+
+const SELECTED_CARD_KEY = '@selected_card';
+
 export default function CardStatsScreen() {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
@@ -27,7 +35,6 @@ export default function CardStatsScreen() {
   const [pickerMode, setPickerMode] = useState<'start' | 'end'>('start');
   const [selectedCardName, setSelectedCardName] = useState<string>('');
 
-  const SELECTED_CARD_KEY = '@amic_selected_card';
 
   // Fetch stats on mount (total stats)
     useFocusEffect(
@@ -35,25 +42,38 @@ export default function CardStatsScreen() {
       fetchStats();
     }, [startDate, endDate]) // re-run if filter changes too
   );
+  
   const fetchStats = async () => {
     try {
       setLoading(true);
-      const selectedCard = await AsyncStorage.getItem(SELECTED_CARD_KEY);
-      let url = `${config.expo.API_URL}/cards/${selectedCard}/summary`;
 
-      // Apply date filter only if both dates are selected
+      const storedCardData = await AsyncStorage.getItem(SELECTED_CARD_KEY);
+      if (!storedCardData) throw new Error("Card data not found");
+
+      const cardData: CardData = JSON.parse(storedCardData);
+
+      let url = `${config.expo.API_URL}/cards/${cardData.id}/summary`;
+
       if (startDate && endDate) {
-        url += `?start=${startDate.toISOString()}&end=${endDate.toISOString()}`;
+        // Normalize start and end dates
+        const start = new Date(startDate);
+        start.setHours(0, 0, 0, 0); // start of day
+
+        const end = new Date(endDate);
+        end.setHours(23, 59, 59, 999); // end of day
+
+        url += `?start=${start.toISOString()}&end=${end.toISOString()}`;
       }
 
-      const response = await fetch(url , {
+      const response = await fetch(url, {
         headers: {
           "Content-Type": "application/json",
-          "x-api-key": process.env.EXPO_PUBLIC_SECRET_API as string, // ✅ works in Expo
+          "x-api-key": process.env.EXPO_PUBLIC_SECRET_API as string,
         },
       });
+
       const data = await response.json();
-      setSelectedCardName(data.cardInfo.card_name)
+      setSelectedCardName(data.cardInfo.card_name);
       setTotalSpent(parseFloat(data.totalSpent));
       setTotalLiters(parseFloat(data.totalLiters));
     } catch (err) {
@@ -62,6 +82,7 @@ export default function CardStatsScreen() {
       setLoading(false);
     }
   };
+
 
   const openPicker = (mode: 'start' | 'end') => {
     setPickerMode(mode);

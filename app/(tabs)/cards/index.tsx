@@ -15,7 +15,15 @@ interface HistoryItem {
   fuel_price: number
 }
 
-const SELECTED_CARD_KEY = '@amic_selected_card';
+interface CardData {
+  id: number;
+  balance: number;
+  name: string;
+}
+
+let cardId : string;
+
+const SELECTED_CARD_KEY = '@selected_card';
 
 export default function IndexScreen() {
   const [balance, setBalance] = useState<number>(0);
@@ -28,7 +36,6 @@ export default function IndexScreen() {
 
   const router = useRouter(); 
 
-  // Tarih formatı
   const getFormattedDate = () => {
     const now = new Date();
     const day = String(now.getDate()).padStart(2, '0');
@@ -50,12 +57,12 @@ export default function IndexScreen() {
 };
 
 
-  // İşlem geçmişi ekle
   const addHistoryItem = (
     amount: number,
     newBal: number,
     type: 'added' | 'purchased',
-    liters: number
+    liters: number,
+    fuel_price: number
   ) => {
     const newHistoryItem: HistoryItem = {
       id: Date.now().toString(),
@@ -64,41 +71,54 @@ export default function IndexScreen() {
       date: getFormattedDate(),
       type,
       liters,
-      fuel_price: 0
+      fuel_price
     };
     setHistory(prev => [newHistoryItem, ...prev]);
   };
 
-  // Veri yükleme
+
   useEffect(() => {
     const loadData = async () => {
       try {
-        const selectedCard = await AsyncStorage.getItem(SELECTED_CARD_KEY);
-        const cardInfoRes = await fetch(`${config.expo.API_URL}/cards/${selectedCard}/info`, {
-        headers: {
-          "Content-Type": "application/json"
-        },
-      });
-        const cardInfo = await cardInfoRes.json();
 
-        setSelectedCardName(cardInfo.card_name)
+        const storedCardData = await AsyncStorage.getItem(SELECTED_CARD_KEY)!;
+        
+        if (!storedCardData) throw new Error("Card data not found");
 
-        const latestFuelPriceRes = await fetch(`${config.expo.API_URL}/cards/${selectedCard}/latest-fuel-price`, {
-        headers: {
-          "Content-Type": "application/json"
-          },
-        });
-        const latestFuelPriceData = await latestFuelPriceRes.json()
+        const cardData: CardData = JSON.parse(storedCardData) as CardData;
+        cardId = cardData.id.toString()
 
-        setFuelPrice(latestFuelPriceData.latest_fuel_price ?? fuelPrice)
-        setBalance(parseFloat(cardInfo.balance));
+        setBalance(cardData.balance)
+        setSelectedCardName(cardData.name)
+
+      //   const cardInfoRes = await fetch(`${config.expo.API_URL}/cards/${cardData.id}/info`, {
+      //   headers: {
+      //     "Content-Type": "application/json"
+      //   },
+      // });
+      //   const cardInfo = await cardInfoRes.json();
+
+      //   setSelectedCardName(cardInfo.card_name)
+
+      //   const latestFuelPriceRes = await fetch(`${config.expo.API_URL}/cards/${cardData.id}/latest-fuel-price`, {
+      //   headers: {
+      //     "Content-Type": "application/json"
+      //     },
+      //   });
+      //   const latestFuelPriceData = await latestFuelPriceRes.json()
+
+      //   setFuelPrice(latestFuelPriceData.latest_fuel_price ?? fuelPrice)
+      //   setBalance(parseFloat(cardInfo.balance));
     
-        const historyItemsRes = await fetch(`${config.expo.API_URL}/cards/${selectedCard}/transactions`, {
+        const historyItemsRes = await fetch(`${config.expo.API_URL}/cards/${cardData.id}/transactions`, {
         headers: {
           "Content-Type": "application/json"
           },
         });
+
         const data = await historyItemsRes.json();
+
+        setFuelPrice(data.latestFuelPrice ?? fuelPrice)
 
         const mappedHistory: HistoryItem[] = data.transactions.map((item: any) => ({
           id: item.transaction_id.toString(),
@@ -125,7 +145,6 @@ export default function IndexScreen() {
   // Bakiye azalt (harcama)
   const handleSubtract = async () => {
     const value = parseFloat(inputValue);
-    const selectedCard = await AsyncStorage.getItem(SELECTED_CARD_KEY);
 
     const currentFuelPrice = parseFloat(fuelPrice.toFixed(2));
 
@@ -150,7 +169,7 @@ export default function IndexScreen() {
             try {
               // Send POST request to backend
               const response = await fetch(
-                `${config.expo.API_URL}/cards/${selectedCard}/spend`,
+                `${config.expo.API_URL}/cards/${cardId}/spend`,
                 {
                   method: 'POST',
                   headers: {
@@ -168,9 +187,9 @@ export default function IndexScreen() {
               }
 
               // Update balance and history from server response
-              const newBalance = parseFloat(data.remaining_balance);
+              const newBalance = parseFloat(data.transaction.new_balance);
               setBalance(newBalance);
-              addHistoryItem(-value, newBalance, 'purchased', data.liters );
+              addHistoryItem(-value, newBalance, 'purchased', parseFloat(data.transaction.liters), data.transaction.fuel_price );
               setInputValue('');
             } catch (error) {
               console.error(error);
@@ -186,9 +205,8 @@ export default function IndexScreen() {
 
   // Bakiye ekle
   const handleAddBalance = async () => {
-    const value = parseFloat(inputValue);
 
-    const selectedCard = await AsyncStorage.getItem(SELECTED_CARD_KEY);
+    const value = parseFloat(inputValue);
 
     if (isNaN(value) || value <= 0) {
       Alert.alert('Invalid Amount', 'Please enter a positive amount.');
@@ -206,7 +224,7 @@ export default function IndexScreen() {
             try {
               // Send POST request to backend
               const response = await fetch(
-                `${config.expo.API_URL}/cards/${selectedCard}/topup`,
+                `${config.expo.API_URL}/cards/${cardId}/topup`,
                 {
                   method: 'POST',
                   headers: {
@@ -225,7 +243,7 @@ export default function IndexScreen() {
 
               // Update local state after successful request
               setBalance(parseFloat(data.balance));
-              addHistoryItem(value, parseFloat(data.balance), 'added', 0);
+              addHistoryItem(value, parseFloat(data.balance), 'added', 0,0);
               setInputValue('');
             } catch (error) {
               console.error(error);
