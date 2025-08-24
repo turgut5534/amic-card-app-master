@@ -118,7 +118,7 @@ export default function HistoryTab() {
             </Text>
 
             <Text style={styles.historyFuelPrice}>
-              Price: {item.fuel_price.toLocaleString('pl-PL', {
+              Fuel price: {item.fuel_price.toLocaleString('pl-PL', {
                 style: 'currency',
                 currency: 'PLN',
               })}

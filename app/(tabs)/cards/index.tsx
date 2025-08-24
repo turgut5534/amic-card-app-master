@@ -7,11 +7,12 @@ import config from '../../../config.json';
 
 interface HistoryItem {
   id: string;
-  amount: number; // pozitif: eklenen, negatif: harcanan
+  amount: number; 
   newBalance: number;
   date: string;
-  type: string; // işlem tipi
-  liters: number
+  type: string; 
+  liters: number;
+  fuel_price: number
 }
 
 const SELECTED_CARD_KEY = '@amic_selected_card';
@@ -62,7 +63,8 @@ export default function IndexScreen() {
       newBalance: newBal,
       date: getFormattedDate(),
       type,
-      liters
+      liters,
+      fuel_price: 0
     };
     setHistory(prev => [newHistoryItem, ...prev]);
   };
@@ -104,7 +106,8 @@ export default function IndexScreen() {
           newBalance: parseFloat(item.new_balance), // replace with actual field if you calculate balance on backend
           date: getFormattedDateofData(item.transaction_date),
           type: item.transaction_type === 'spend' ? 'purchased' : item.transaction_type === 'topup' ? 'added' : 'setted',
-          liters: parseFloat(item.liters)
+          liters: parseFloat(item.liters),
+          fuel_price: parseFloat(item.fuel_price)
         }));
 
         setHistory(mappedHistory);
@@ -311,11 +314,20 @@ export default function IndexScreen() {
                     )}
                   </Text>
 
-                    {item.type === 'purchased' && item.liters != null && (
-                      <Text style={styles.historyLiters}>
-                        Yakıt: {item.liters.toFixed(2)} L
-                      </Text>
-                    )}
+                {item.type === 'purchased' && item.liters != null && (
+                  <View>
+                    <Text style={styles.historyLiters}>
+                      Amount: {item.liters.toFixed(2)} L
+                    </Text>
+        
+                    <Text style={styles.historyFuelPrice}>
+                      Fuel price: {item.fuel_price.toLocaleString('pl-PL', {
+                        style: 'currency',
+                        currency: 'PLN',
+                      })}
+                    </Text>
+                  </View>
+                )}
 
                   <Text style={styles.historyDate}>{item.date}</Text>
                 </View>
@@ -491,7 +503,11 @@ historyLiters: {
   fontSize: 14,
   color: '#555',
   marginTop: 2,
+},
+historyFuelPrice: {
+  fontSize: 14,
+  color: '#28a745',
+  marginTop: 2,
 }
-
 
 });
