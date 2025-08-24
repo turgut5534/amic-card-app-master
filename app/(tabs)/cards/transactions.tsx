@@ -36,7 +36,7 @@ const PAGE_SIZE = 10;
 export default function HistoryTab() {
   const [history, setHistory] = useState<HistoryItem[]>([]);
   const [balance, setBalance] = useState<number>(0);
-  const [selectedCardName, setSelectedCardName] = useState<string>('E100');
+  const [selectedCardName, setSelectedCardName] = useState<string>('');
   const [currentPage, setCurrentPage] = useState<number>(1);
   const [loading, setLoading] = useState<boolean>(true);
   const [refreshing, setRefreshing] = useState<boolean>(false);
@@ -69,7 +69,6 @@ export default function HistoryTab() {
       const cardData: CardData = JSON.parse(storedCardData) as CardData;
 
       setSelectedCardName(cardData.name)
-      setBalance(cardData.balance);
 
       const historyItemsRes = await fetch(`${config.expo.API_URL}/cards/${cardData.id}/transactions`, {
         headers: {
