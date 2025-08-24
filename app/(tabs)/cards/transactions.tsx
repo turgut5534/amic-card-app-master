@@ -40,6 +40,13 @@ export default function HistoryTab() {
   const [currentPage, setCurrentPage] = useState<number>(1);
   const [loading, setLoading] = useState<boolean>(true);
   const [refreshing, setRefreshing] = useState<boolean>(false);
+  const [filter, setFilter] = useState<'all' | 'topup' | 'spend'>('all'); // new filter state
+
+  const filteredHistory = history.filter(item => {
+    if (filter === 'topup') return item.type === 'added';
+    if (filter === 'spend') return item.type === 'purchased';
+    return true;
+  });
 
   const getFormattedDateofData = (dateString: string) => {
     const date = new Date(dateString); // use the passed date
@@ -108,7 +115,7 @@ export default function HistoryTab() {
   }, [history, totalPages, currentPage]);
 
   const startIndex = (currentPage - 1) * PAGE_SIZE;
-  const pageData = history.slice(startIndex, startIndex + PAGE_SIZE);
+  const pageData = filteredHistory.slice(startIndex, startIndex + PAGE_SIZE);
 
   const renderItem = ({ item }: { item: HistoryItem }) => (
     <View style={[styles.item, { borderLeftColor: item.amount < 0 ? '#e74c3c' : '#27ae60' }]}>
@@ -150,15 +157,40 @@ export default function HistoryTab() {
 
   return (
     <SafeAreaView style={styles.container}>
-        <TouchableOpacity style={styles.backSmallButton} onPress={() => router.push('/')}>
-                  <Text style={styles.backSmallButtonText}>← Back</Text>
-                </TouchableOpacity>
+      <TouchableOpacity style={styles.backSmallButton} onPress={() => router.push('/')}>
+        <Text style={styles.backSmallButtonText}>← Back</Text>
+      </TouchableOpacity>
+
       <Text style={styles.title}>
         {selectedCardName} Card Balance: {balance.toFixed(2)} zł
       </Text>
       <Text style={styles.title}>
-        History ({history.length} transactions)
+        History ({filteredHistory.length} transactions)
       </Text>
+
+      {/* Filter buttons */}
+      <View style={{ flexDirection: 'row', justifyContent: 'center', marginVertical: 8 }}>
+        <TouchableOpacity
+          style={[styles.filterBtn, filter === 'all' && styles.filterBtnActive]}
+          onPress={() => { setFilter('all'); setCurrentPage(1); }}
+        >
+          <Text style={styles.filterBtnText}>All</Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity
+          style={[styles.filterBtn, filter === 'topup' && styles.filterBtnActive]}
+          onPress={() => { setFilter('topup'); setCurrentPage(1); }}
+        >
+          <Text style={styles.filterBtnText}>Only Topups</Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity
+          style={[styles.filterBtn, filter === 'spend' && styles.filterBtnActive]}
+          onPress={() => { setFilter('spend'); setCurrentPage(1); }}
+        >
+          <Text style={styles.filterBtnText}>Only Spents</Text>
+        </TouchableOpacity>
+      </View>
 
       {loading ? (
         <ActivityIndicator size="large" style={{ marginTop: 30 }} />
@@ -240,6 +272,21 @@ historyFuelPrice: {
   fontSize: 14,
   color: '#28a745',
   marginTop: 2,
-}
+},
+filterBtn: {
+    paddingVertical: 6,
+    paddingHorizontal: 12,
+    marginHorizontal: 4,
+    backgroundColor: '#bdc3c7',
+    borderRadius: 6,
+  },
+  filterBtnActive: {
+    backgroundColor: '#2980b9',
+  },
+  filterBtnText: {
+    color: 'white',
+    fontWeight: '600',
+    fontSize: 14,
+  },
 
 });
