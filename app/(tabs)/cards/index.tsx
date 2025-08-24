@@ -54,7 +54,7 @@ export default function IndexScreen() {
   const addHistoryItem = (
     amount: number,
     newBal: number,
-    type: 'added' | 'purchased' | 'setted',
+    type: 'added' | 'purchased',
     liters: number
   ) => {
     const newHistoryItem: HistoryItem = {
