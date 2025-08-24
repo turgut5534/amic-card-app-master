@@ -19,7 +19,8 @@ interface HistoryItem {
   newBalance: number;
   date: string;
   type: string; // işlem tipi
-  liters: number
+  liters: number;
+  fuel_price: number
 }
 
 const SELECTED_CARD_KEY = '@amic_selected_card';
@@ -63,7 +64,8 @@ export default function HistoryTab() {
         newBalance: parseFloat(item.new_balance), // replace with actual field if you calculate balance on backend
         date: getFormattedDateofData(item.transaction_date),
         type: item.transaction_type === 'spend' ? 'purchased' : item.transaction_type === 'topup' ? 'added' : 'setted',
-        liters: parseFloat(item.liters)
+        liters: parseFloat(item.liters),
+        fuel_price: parseFloat(item.fuel_price)
       }));
 
       const cardInfoRes = await fetch(`${config.expo.API_URL}/cards/${selectedCard}/info`, {
@@ -109,10 +111,19 @@ export default function HistoryTab() {
           {item.type === 'purchased' && <>{Math.abs(item.amount).toFixed(2)} zł spent → Balance: {item.newBalance.toFixed(2)} zł</>}
         </Text>
 
-         {item.type === 'purchased' && item.liters != null && (
-          <Text style={styles.historyLiters}>
-            Yakıt: {item.liters.toFixed(2)} L
-          </Text>
+        {item.type === 'purchased' && item.liters != null && (
+          <View>
+            <Text style={styles.historyLiters}>
+              Amount: {item.liters.toFixed(2)} L
+            </Text>
+
+            <Text style={styles.historyFuelPrice}>
+              Price: {item.fuel_price.toLocaleString('pl-PL', {
+                style: 'currency',
+                currency: 'PLN',
+              })}
+            </Text>
+          </View>
         )}
 
         <Text style={styles.dateText}>{item.date}</Text>
@@ -218,5 +229,10 @@ backSmallButtonText: {
   fontWeight: '600',
   fontSize: 14,
 },
+historyFuelPrice: {
+  fontSize: 14,
+  color: '#28a745',
+  marginTop: 2,
+}
 
 });
