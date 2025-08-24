@@ -1,7 +1,7 @@
 {
   "expo": {
     "name": "Fuel Card",
-    "slug": "fuel-card",
+    "slug": "amic-card-app",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/fuel2.png",
