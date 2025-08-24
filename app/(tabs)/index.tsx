@@ -18,6 +18,7 @@ export default function HomeScreen() {
   const router = useRouter();
   const [cards, setCards] = useState<{ id: number; name: string; balance: number }[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
   const loadCards = useCallback(async () => {
     try {
@@ -41,8 +42,10 @@ export default function HomeScreen() {
         balance: parseFloat(c.balance),
       }));
       setCards(mapped);
-    } catch (err) {
+      setError(null);
+    } catch (err: any) {
       console.error('Card could not load', err);
+      setError(err.message);
     } finally {
       setLoading(false);
     }
@@ -121,6 +124,12 @@ export default function HomeScreen() {
       <Text style={styles.header}>💳 Choose a Card</Text>
       <Text style={styles.subHeader}>Please choose a card that you want to make transaction.</Text>
 
+      {error && (
+        <Text style={{ color: "red", marginVertical: 10, textAlign: "center" }}>
+          {error}
+        </Text>
+      )}
+    
       <ScrollView contentContainerStyle={styles.cardContainer}>
         {loading ? <Text>Loading...</Text> : cards.map(card => <Card key={card.id} card={card} />)}
 
