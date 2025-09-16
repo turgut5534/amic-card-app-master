@@ -1,6 +1,6 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useRouter } from 'expo-router';
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { Alert, FlatList, StatusBar, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import config from '../../../config.json';
@@ -56,6 +56,20 @@ export default function IndexScreen() {
   return `${day}/${month}/${year} ${hours}:${minutes}`;
 };
 
+ const intervalRef = useRef(null);
+
+  const startChanging = (changeFn) => {
+    changeFn(); // Immediate change on press
+    intervalRef.current = setInterval(changeFn, 100); // Repeat every 100ms
+  };
+
+  // Function to stop continuous change
+  const stopChanging = () => {
+    if (intervalRef.current) {
+      clearInterval(intervalRef.current);
+      intervalRef.current = null;
+    }
+  };
 
   const addHistoryItem = (
     amount: number,
@@ -278,24 +292,32 @@ export default function IndexScreen() {
           />
 
           {/* Yakıt fiyatı input */}
-          <View style={styles.stepperContainer}>
-            <Text style={styles.stepperLabel}>Fuel Price (zł/L)</Text>
-            <View style={styles.stepperRow}>
-              <TouchableOpacity
-                style={styles.stepperButton}
-                onPress={() => setFuelPrice(prev => Math.max(prev - 0.01, 0))}
-              >
-                <Text style={styles.stepperButtonText}>−</Text>
-              </TouchableOpacity>
-              <Text style={styles.stepperValue}>{fuelPrice.toFixed(2)}</Text>
-              <TouchableOpacity
-                style={styles.stepperButton}
-                onPress={() => setFuelPrice(prev => prev + 0.01)}
-              >
-                <Text style={styles.stepperButtonText}>+</Text>
-              </TouchableOpacity>
-            </View>
-          </View>
+<View style={styles.stepperContainer}>
+      <Text style={styles.stepperLabel}>Fuel Price (zł/L)</Text>
+      <View style={styles.stepperRow}>
+        <TouchableOpacity
+          style={styles.stepperButton}
+          onPressIn={() =>
+            startChanging(() => setFuelPrice(prev => Math.max(prev - 0.01, 0)))
+          }
+          onPressOut={stopChanging}
+        >
+          <Text style={styles.stepperButtonText}>−</Text>
+        </TouchableOpacity>
+
+        <Text style={styles.stepperValue}>{fuelPrice.toFixed(2)}</Text>
+
+        <TouchableOpacity
+          style={styles.stepperButton}
+          onPressIn={() =>
+            startChanging(() => setFuelPrice(prev => prev + 0.01))
+          }
+          onPressOut={stopChanging}
+        >
+          <Text style={styles.stepperButtonText}>+</Text>
+        </TouchableOpacity>
+      </View>
+    </View>
 
 
           <View style={styles.buttonRow}>
